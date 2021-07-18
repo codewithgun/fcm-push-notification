@@ -1,5 +1,8 @@
 {
   "dependencies": {
     "firebase-admin": "^9.11.0"
+  },
+  "scripts": {
+      "start": "ts-node index.ts"
   }
 }

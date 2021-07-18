@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Push Notification</title>
+</head>
+
+<body>
+    <div id='root'></div>
+</body>
+<script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+<script crossorigin src="https://unpkg.com/react@17/umd/react.production.min.js"></script>
+<script crossorigin src="https://unpkg.com/react-dom@17/umd/react-dom.production.min.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.7.1/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.7.1/firebase-messaging.js"></script>
+
+<script type="text/babel">
+    class PushNotification {
+        firebasePublicKey = 'BAymP7KxYuHqlNbuRFObsKCVOY7n6Jc3nCk-FnHGzhxtcrjUEyb8CvObJKRe510xWIt0GjIEQZ4UiTn7DM0F4x8';
+        firebaseConfig = {
+            apiKey: "AIzaSyA04XQbMocvlirJHFSQ2erMg3-Ltx1KcHE",
+            authDomain: "testing-1f0ca.firebaseapp.com",
+            projectId: "testing-1f0ca",
+            storageBucket: "testing-1f0ca.appspot.com",
+            messagingSenderId: "1089017061441",
+            appId: "1:1089017061441:web:b83e2244190a04bb5da6c0",
+            measurementId: "G-5ST3LVNHSM"
+        };
+
+        start() {
+            firebase.initializeApp(this.firebaseConfig);
+            const messaging = firebase.messaging();
+            messaging.getToken({
+                vapidKey: this.firebasePublicKey
+            }).then(console.log);
+        }
+    }
+
+    class App extends React.Component {
+        state = {
+        };
+        componentDidMount() {
+            let pushNotification = new PushNotification();
+            pushNotification.start();
+        }
+        render() {
+            return <div>Test</div>
+        }
+    }
+    ReactDOM.render(
+        <App />,
+        document.getElementById('root')
+    );
+</script>
+
+</html>
