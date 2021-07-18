@@ -1,6 +1,6 @@
 import * as admin from 'firebase-admin';
 
-const certificate = require('./ignore/firebase-admin.json');
+const certificate = require('./../ignore/firebase-admin.json');
 
 export default class FirebaseAdmin {
     deviceToken: string[] = [];
