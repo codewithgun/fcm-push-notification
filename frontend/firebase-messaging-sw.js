@@ -12,6 +12,7 @@ firebase.initializeApp({
 });
 
 const messaging = firebase.messaging();
+//The below was for closed browser
 messaging.onBackgroundMessage(function (payload) {
     console.log('[firebase-messaging-sw.js] Received background message ', payload);
     const notificationTitle = 'Background Message Title';

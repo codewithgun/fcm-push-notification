@@ -36,5 +36,7 @@ Generate public key
 4. Click `Generate key pair`
 5. Copy the generated `key pair` for later use
 
-## References
+** Note **
+You must create `firebase-messaging-sw.js` to make this work
+## Example code
 - https://github.com/firebase/quickstart-js/tree/master/messaging
