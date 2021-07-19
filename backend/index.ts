@@ -7,10 +7,26 @@ const tokens: string[] = [];
 const app = express();
 app.use(express.json());
 app.use(cors());
-app.post('/join', function(req, res){
-    console.log(req.body);
+app.post('/join', function (req, res) {
+	const { token } = req.body;
+	if (!token) {
+		res.status(400).json({ error: 'Token required' });
+	} else {
+		let tokenExists = tokens.find((t) => t == token);
+		if (!tokenExists) {
+			tokens.push(token);
+			firebaseAdmin.messaging.send({
+				data: {
+					users: JSON.stringify(tokens),
+				},
+				topic: 'join',
+			});
+		}
+		console.log(tokens);
+		res.status(200).json({ data: 'Successfully joined' });
+	}
 });
 
 app.listen(3000, () => {
-    console.log('Listening on port 3000')
+	console.log('Listening on port 3000');
 });
