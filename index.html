@@ -22,7 +22,7 @@
         pushNotification;
         state = {
             isConnected: false,
-            messaging: null,
+            users: []
         };
         messaging;
         componentDidMount() {
@@ -35,15 +35,33 @@
                     isConnected: true,
                 });
                 this.messaging = messaging;
-                this.messaging.onMessage((payload) => {
-                    console.log(payload);
+                this.messaging.onMessage(payload => {
+                    this.handleMessage(payload);
                 });
             }).catch(err => alert(err.message));
+        }
+
+        handleMessage(payload) {
+            const { data } = payload;
+            switch (data.event) {
+                case 'users':
+                    this.setState({
+                        users: JSON.parse(data.tokens)
+                    });
+                    break;
+            }
         }
 
         render() {
             return (
                 <div>
+                    <ul style={{ display: this.state.isConnected ? 'block' : 'none' }}>
+                        {this.state.users.map(token => {
+                            return (
+                                <li key={token}>{token}</li>
+                            )
+                        })}
+                    </ul>
                     <button onClick={(e) => this.join(e)} style={{ display: this.state.isConnected ? 'none' : 'block' }}>Join</button>
                 </div>
             )

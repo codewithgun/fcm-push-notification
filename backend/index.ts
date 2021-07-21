@@ -7,6 +7,15 @@ const tokens: string[] = [];
 const app = express();
 app.use(express.json());
 app.use(cors());
+
+// Send can trigger service worker
+// firebaseAdmin.messaging.send({
+//     data : {
+//         hello: 'world'
+//     },
+//     token: 'd6PMTKKcIMcZxV_S304r3r:APA91bHHzEXP0h__QYHdai14TeOT-ceOEopVp9M9cydQQK0qeXuItBF2U4BLouP9E9RzoTzdrC-imWMkMpsM31h5qxoxukSli5NJOYoVVdFHqSwW3VbdV0Tt0BlWCrswrap8o1tg2TEz'
+// });
+
 app.post('/join', function (req, res) {
 	const { token } = req.body;
 	if (!token) {
@@ -15,19 +24,19 @@ app.post('/join', function (req, res) {
 		let tokenExists = tokens.find((t) => t == token);
 		if (!tokenExists) {
 			tokens.push(token);
-			firebaseAdmin.messaging.send({
-				data: {
-					users: JSON.stringify(tokens),
-				},
-				topic: 'join',
-			});
+			// firebaseAdmin.messaging.send({
+			// 	data: {
+			// 		users: JSON.stringify(tokens),
+			// 	},
+			// 	topic: 'join',
+			// });
 		}
 		console.log(tokens);
 		res.status(200).json({ data: 'Successfully joined' });
 		firebaseAdmin.messaging.sendMulticast({
 			data: {
-				event: 'join',
-				token,
+				event: 'users',
+				tokens: JSON.stringify(tokens),
 			},
 			tokens,
 		});
