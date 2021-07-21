@@ -12,21 +12,41 @@
     <div id='root'></div>
 </body>
 <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
-<script crossorigin src="https://unpkg.com/react@17/umd/react.production.min.js"></script>
-<script crossorigin src="https://unpkg.com/react-dom@17/umd/react-dom.production.min.js"></script>
+<script crossorigin src="https://unpkg.com/react@17/umd/react.development.js"></script>
+<script crossorigin src="https://unpkg.com/react-dom@17/umd/react-dom.development.js"></script>
 <script src="https://www.gstatic.com/firebasejs/8.7.1/firebase-app.js"></script>
 <script src="https://www.gstatic.com/firebasejs/8.7.1/firebase-messaging.js"></script>
 
 <script type="text/babel">
     class App extends React.Component {
+        pushNotification;
         state = {
+            isConnected: false,
+            messaging: null,
         };
+        messaging;
         componentDidMount() {
-            let pushNotification = new PushNotification();
-            pushNotification.start();
+            this.pushNotification = new PushNotification();
         }
+
+        join(e) {
+            this.pushNotification.start().then(messaging => {
+                this.setState({
+                    isConnected: true,
+                });
+                this.messaging = messaging;
+                this.messaging.onMessage((payload) => {
+                    console.log(payload);
+                });
+            }).catch(err => alert(err.message));
+        }
+
         render() {
-            return <div>Test</div>
+            return (
+                <div>
+                    <button onClick={(e) => this.join(e)} style={{ display: this.state.isConnected ? 'none' : 'block' }}>Join</button>
+                </div>
+            )
         }
     }
     ReactDOM.render(
@@ -47,39 +67,56 @@
             appId: "1:1089017061441:web:b83e2244190a04bb5da6c0",
             measurementId: "G-5ST3LVNHSM"
         };
+        token;
+        messaging;
 
-
-        start() {
+        constructor() {
             firebase.initializeApp(this.firebaseConfig);
             this.messaging = firebase.messaging();
-            this.requestPermission();
-            //For firefix, I'm getting `The Notification permission may only be requested from inside a short running user-generated event handler.` error. But, we still can allow notification by clicking the at left side of the URL bar.
         }
 
-        getToken() {
-            this.messaging.getToken({
-                vapidKey: this.firebasePublicKey
-            }).then(token => {
-                console.log(token);
-            });
-            this.messaging.onMessage(payload => {
-                console.log('Message', payload);
+        start() {
+            return new Promise(async (res, rej) => {
+                let permissionAllowed = await this.requestPermission();
+                if (permissionAllowed) {
+                    let token = await this.messaging.getToken({
+                        vapidKey: this.firebasePublicKey
+                    });
+                    this.token = token;
+                    fetch('http://localhost:3000/join', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        mode: 'cors',
+                        body: JSON.stringify({
+                            token: this.token
+                        })
+                    }).then(res => res.json()).then(() => {
+                        res(this.messaging);
+                    }).catch(err => {
+                        console.error(err);
+                        rej(err.message);
+                    });
+                }
+                else {
+                    rej('Please enable notification permission');
+                }
             });
         }
 
-        requestPermission() {
-            if (Notification.permission === 'granted') {
-                this.getToken();
+        async requestPermission() {
+            //For firefox, I'm getting `The Notification permission may only be requested from inside a short running user-generated event handler.` error. But, we still can allow notification by clicking the at left side of the URL bar.
+            if (Notification.permission === 'default') {
+                let permission = await Notification.requestPermission();
+                return permission == 'granted';
             }
-            else if (Notification.permission === 'default') {
-                Notification.requestPermission().then(function (permission) {
-                    if (permission === "granted") {
-                        this.getToken();
-                    }
-                });
+            else if (Notification.permission === 'granted') {
+                return true;
             }
             else {
                 // User don't want us :(
+                return false;
             }
         }
     }
