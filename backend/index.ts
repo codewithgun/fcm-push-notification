@@ -24,6 +24,13 @@ app.post('/join', function (req, res) {
 		}
 		console.log(tokens);
 		res.status(200).json({ data: 'Successfully joined' });
+		firebaseAdmin.messaging.sendMulticast({
+			data: {
+				event: 'join',
+				token,
+			},
+			tokens,
+		});
 	}
 });
 
