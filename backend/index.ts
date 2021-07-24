@@ -30,16 +30,24 @@ app.post('/join', function (req, res) {
 			// 	},
 			// 	topic: 'join',
 			// });
+			firebaseAdmin.messaging.subscribeToTopic(tokens, 'join').then(console.log).catch(console.error);
 		}
 		console.log(tokens);
 		res.status(200).json({ data: 'Successfully joined' });
-		firebaseAdmin.messaging.sendMulticast({
+		firebaseAdmin.messaging.send({
 			data: {
-				event: 'users',
 				tokens: JSON.stringify(tokens),
 			},
-			tokens,
+			topic: 'join',
 		});
+		// Send to multiple tokens at one shot
+		// firebaseAdmin.messaging.sendMulticast({
+		// 	data: {
+		// 		event: 'users',
+		// 		tokens: JSON.stringify(tokens),
+		// 	},
+		// 	tokens,
+		// });
 	}
 });
 
