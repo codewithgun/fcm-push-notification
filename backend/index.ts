@@ -16,7 +16,7 @@ app.use(cors());
 //     token: 'd6PMTKKcIMcZxV_S304r3r:APA91bHHzEXP0h__QYHdai14TeOT-ceOEopVp9M9cydQQK0qeXuItBF2U4BLouP9E9RzoTzdrC-imWMkMpsM31h5qxoxukSli5NJOYoVVdFHqSwW3VbdV0Tt0BlWCrswrap8o1tg2TEz'
 // });
 
-app.post('/join', function (req, res) {
+app.post('/join', async function (req, res) {
 	const { token } = req.body;
 	if (!token) {
 		res.status(400).json({ error: 'Token required' });
@@ -30,7 +30,8 @@ app.post('/join', function (req, res) {
 			// 	},
 			// 	topic: 'join',
 			// });
-			firebaseAdmin.messaging.subscribeToTopic(tokens, 'join').then(console.log).catch(console.error);
+			let result = await firebaseAdmin.messaging.subscribeToTopic(tokens, 'join');
+			// console.log(result);
 		}
 		console.log(tokens);
 		res.status(200).json({ data: 'Successfully joined' });

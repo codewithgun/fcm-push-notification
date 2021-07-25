@@ -36,6 +36,7 @@
                 });
                 this.messaging = messaging;
                 this.messaging.onMessage(payload => {
+                    console.log('Incoming message', payload);
                     this.handleMessage(payload);
                 });
             }).catch(err => alert(err.message));
