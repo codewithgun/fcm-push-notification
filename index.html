@@ -1,145 +1,146 @@
 <!DOCTYPE html>
 <html lang="en">
+	<head>
+		<meta charset="UTF-8" />
+		<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+		<title>Push Notification</title>
+	</head>
 
-<head>
-    <meta charset="UTF-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Push Notification</title>
-</head>
+	<body>
+		<div id="root"></div>
+	</body>
+	<script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+	<script crossorigin src="https://unpkg.com/react@17/umd/react.development.js"></script>
+	<script crossorigin src="https://unpkg.com/react-dom@17/umd/react-dom.development.js"></script>
+	<script src="https://www.gstatic.com/firebasejs/8.7.1/firebase-app.js"></script>
+	<script src="https://www.gstatic.com/firebasejs/8.7.1/firebase-messaging.js"></script>
 
-<body>
-    <div id='root'></div>
-</body>
-<script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
-<script crossorigin src="https://unpkg.com/react@17/umd/react.development.js"></script>
-<script crossorigin src="https://unpkg.com/react-dom@17/umd/react-dom.development.js"></script>
-<script src="https://www.gstatic.com/firebasejs/8.7.1/firebase-app.js"></script>
-<script src="https://www.gstatic.com/firebasejs/8.7.1/firebase-messaging.js"></script>
+	<script type="text/babel">
+		class App extends React.Component {
+			pushNotification;
+			state = {
+				isConnected: false,
+				users: [],
+			};
+			messaging;
+			componentDidMount() {
+				this.pushNotification = new PushNotification();
+			}
 
-<script type="text/babel">
-    class App extends React.Component {
-        pushNotification;
-        state = {
-            isConnected: false,
-            users: []
-        };
-        messaging;
-        componentDidMount() {
-            this.pushNotification = new PushNotification();
-        }
+			join(e) {
+				this.pushNotification
+					.start()
+					.then((messaging) => {
+						this.setState({
+							isConnected: true,
+						});
+						this.messaging = messaging;
+						this.messaging.onMessage((payload) => {
+							console.log('Incoming message', payload);
+							this.handleMessage(payload);
+						});
+					})
+					.catch((err) => alert(err.message));
+			}
 
-        join(e) {
-            this.pushNotification.start().then(messaging => {
-                this.setState({
-                    isConnected: true,
-                });
-                this.messaging = messaging;
-                this.messaging.onMessage(payload => {
-                    console.log('Incoming message', payload);
-                    this.handleMessage(payload);
-                });
-            }).catch(err => alert(err.message));
-        }
+			handleMessage(payload) {
+				const { data } = payload;
+				switch (data.event) {
+					case 'users':
+						this.setState({
+							users: JSON.parse(data.tokens),
+						});
+						break;
+				}
+			}
 
-        handleMessage(payload) {
-            const { data } = payload;
-            switch (data.event) {
-                case 'users':
-                    this.setState({
-                        users: JSON.parse(data.tokens)
-                    });
-                    break;
-            }
-        }
+			render() {
+				return (
+					<div>
+						<ul style={{ display: this.state.isConnected ? 'block' : 'none' }}>
+							{this.state.users.map((token) => {
+								return <li key={token}>{token}</li>;
+							})}
+						</ul>
+						<button onClick={(e) => this.join(e)} style={{ display: this.state.isConnected ? 'none' : 'block' }}>
+							Join
+						</button>
+					</div>
+				);
+			}
+		}
+		ReactDOM.render(<App />, document.getElementById('root'));
+	</script>
 
-        render() {
-            return (
-                <div>
-                    <ul style={{ display: this.state.isConnected ? 'block' : 'none' }}>
-                        {this.state.users.map(token => {
-                            return (
-                                <li key={token}>{token}</li>
-                            )
-                        })}
-                    </ul>
-                    <button onClick={(e) => this.join(e)} style={{ display: this.state.isConnected ? 'none' : 'block' }}>Join</button>
-                </div>
-            )
-        }
-    }
-    ReactDOM.render(
-        <App />,
-        document.getElementById('root')
-    );
-</script>
+	<script>
+		class PushNotification {
+			firebasePublicKey = 'BGMXPEPuFxm-GBx9uNqIcPNZbH6wa6tv1tOIoWWE7WCv5j8oGmyxGLaioziwrKKv-zPe2Lu6qpo6u6aRkq1ETr8';
+			firebaseConfig = {
+				apiKey: 'AIzaSyCPFnMFMdWnX3D1f8xwp4nIF9bt96_gwoY',
 
-<script>
-    class PushNotification {
-        firebasePublicKey = 'BAymP7KxYuHqlNbuRFObsKCVOY7n6Jc3nCk-FnHGzhxtcrjUEyb8CvObJKRe510xWIt0GjIEQZ4UiTn7DM0F4x8';
-        firebaseConfig = {
-            apiKey: "AIzaSyA04XQbMocvlirJHFSQ2erMg3-Ltx1KcHE",
-            authDomain: "testing-1f0ca.firebaseapp.com",
-            projectId: "testing-1f0ca",
-            storageBucket: "testing-1f0ca.appspot.com",
-            messagingSenderId: "1089017061441",
-            appId: "1:1089017061441:web:b83e2244190a04bb5da6c0",
-            measurementId: "G-5ST3LVNHSM"
-        };
-        token;
-        messaging;
+				authDomain: 'test-project-27ad3.firebaseapp.com',
 
-        constructor() {
-            firebase.initializeApp(this.firebaseConfig);
-            this.messaging = firebase.messaging();
-        }
+				projectId: 'test-project-27ad3',
 
-        start() {
-            return new Promise(async (res, rej) => {
-                let permissionAllowed = await this.requestPermission();
-                if (permissionAllowed) {
-                    let token = await this.messaging.getToken({
-                        vapidKey: this.firebasePublicKey
-                    });
-                    this.token = token;
-                    fetch('http://localhost:3000/join', {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json'
-                        },
-                        mode: 'cors',
-                        body: JSON.stringify({
-                            token: this.token
-                        })
-                    }).then(res => res.json()).then(() => {
-                        res(this.messaging);
-                    }).catch(err => {
-                        console.error(err);
-                        rej(err.message);
-                    });
-                }
-                else {
-                    rej('Please enable notification permission');
-                }
-            });
-        }
+				storageBucket: 'test-project-27ad3.appspot.com',
 
-        async requestPermission() {
-            //For firefox, I'm getting `The Notification permission may only be requested from inside a short running user-generated event handler.` error. But, we still can allow notification by clicking the at left side of the URL bar.
-            if (Notification.permission === 'default') {
-                let permission = await Notification.requestPermission();
-                return permission == 'granted';
-            }
-            else if (Notification.permission === 'granted') {
-                return true;
-            }
-            else {
-                // User don't want us :(
-                return false;
-            }
-        }
-    }
+				messagingSenderId: '868281081163',
 
-</script>
+				appId: '1:868281081163:web:2092510b21b5a497419cce',
+			};
+			token;
+			messaging;
 
+			constructor() {
+				firebase.initializeApp(this.firebaseConfig);
+				this.messaging = firebase.messaging();
+			}
+
+			start() {
+				return new Promise(async (res, rej) => {
+					let permissionAllowed = await this.requestPermission();
+					if (permissionAllowed) {
+						let token = await this.messaging.getToken({
+							vapidKey: this.firebasePublicKey,
+						});
+						this.token = token;
+						fetch('http://localhost:3000/join', {
+							method: 'POST',
+							headers: {
+								'Content-Type': 'application/json',
+							},
+							mode: 'cors',
+							body: JSON.stringify({
+								token: this.token,
+							}),
+						})
+							.then((res) => res.json())
+							.then(() => {
+								res(this.messaging);
+							})
+							.catch((err) => {
+								console.error(err);
+								rej(err.message);
+							});
+					} else {
+						rej('Please enable notification permission');
+					}
+				});
+			}
+
+			async requestPermission() {
+				//For firefox, I'm getting `The Notification permission may only be requested from inside a short running user-generated event handler.` error. But, we still can allow notification by clicking the at left side of the URL bar.
+				if (Notification.permission === 'default') {
+					let permission = await Notification.requestPermission();
+					return permission == 'granted';
+				} else if (Notification.permission === 'granted') {
+					return true;
+				} else {
+					// User don't want us :(
+					return false;
+				}
+			}
+		}
+	</script>
 </html>
